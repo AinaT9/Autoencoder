@@ -15,3 +15,8 @@ The AutoEncoder consists of:
 - A decoder with `ConvTranspose2d` layers and `LeakyRelu` for reconstruction.
 - Trained using **Adam optimizer** and a series pof Losses: **MSE**, **MAE** and **BinaryCrossEntropy**.
 - Each loss was selected bases on the normalization applied to the images: **IMAGENET Values**, between [0,1] and between [-1,1].
+
+** FOLDERS** 
+- ImageReconstruction notebook consists in the exhaustive training of the autoencoder. It was used each one of the blocks to analyze the levels of compression and reconstruction of the image.
+- model.py contains the code for the Autoencoder model.
+- pipeline.py contains loadings functions, training and to calculate metrics. 
