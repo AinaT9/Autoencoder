@@ -13,7 +13,7 @@ from torch.utils.data import  DataLoader, Subset
 from torchmetrics.functional.regression import mean_squared_error, mean_absolute_error
 from torch.optim import Adam
 from IPython import display
-
+from skimage.metrics import structural_similarity as ssim
 
 
 TRAINING_SIZE = 30
@@ -147,6 +147,7 @@ def calculate_metrics(model, test_dl, device):
     model.eval()
     total_mse = 0 
     total_mae = 0 
+    total_ssim = 0
 
     total = len(test_dl)
     
@@ -160,8 +161,13 @@ def calculate_metrics(model, test_dl, device):
             total_mse += mse
             mae = mean_absolute_error(output, input_img) 
             total_mae += mae
+            ssim_metric = ssim(output.cpu().numpy(), input_img.cpu().numpy(), channel_axis=1, data_range= input_img.cpu().numpy().max() -  input_img.cpu().numpy().min())
+            total_ssim += ssim_metric
+
     total_mse /=total
     total_mae /=total
+    total_ssim /= total
 
     print("MSE:", total_mse)
     print("MAE:", total_mae)
+    print("SSIM: ", total_ssim)
