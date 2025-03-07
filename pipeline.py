@@ -130,18 +130,18 @@ def showImages(test_dl, model, device):
                 data = data.to(device).float()
                 output = model(data)
                 fig, ax = plt.subplots(1, 2, figsize=(8,4))
-                ax[0].imshow(data[0].cpu().permute(1, 2, 0).numpy(), cmap='gray')
-                ax[1].imshow(output[0].cpu().permute(1, 2, 0).numpy(), cmap='gray')
+                ax[0].imshow((data[0].cpu().permute(1, 2, 0).numpy() * 255).astype(np.uint8), cmap='gray')
+                ax[1].imshow((output[0].cpu().permute(1, 2, 0).numpy()*255).astype(np.uint8), cmap='gray')
                 ax[0].set_title("Origina Image")
                 ax[1].set_title("Reconstructed Image")
                 plt.show()
                 break 
         
 def assignPretrainedModel(device,name:str, model):
-    mmodel =  model.to(device)
-    mmodel.load_state_dict(torch.load(name))
-    mmodel.eval()
-    return mmodel
+    model.load_state_dict(torch.load(name, map_location=device))
+    model.to(device)
+    model.eval()
+    return model
 
 def calculate_metrics(model, test_dl, device):
     model.eval()
@@ -161,7 +161,7 @@ def calculate_metrics(model, test_dl, device):
             total_mse += mse
             mae = mean_absolute_error(output, input_img) 
             total_mae += mae
-            ssim_metric = ssim(output.cpu().numpy(), input_img.cpu().numpy(), channel_axis=1, data_range= input_img.cpu().numpy().max() -  input_img.cpu().numpy().min())
+            ssim_metric = ssim(output.cpu().numpy(), input_img.cpu().numpy(), channel_axis=1, multichannel=True, win_size=3, data_range= input_img.cpu().numpy().max() -  input_img.cpu().numpy().min())
             total_ssim += ssim_metric
 
     total_mse /=total

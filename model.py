@@ -18,6 +18,8 @@ class AutoEncoder(nn.Module):
             "3": self.block3(),
             "4": self.block4(),
             "5": self.block5(),
+            "3_5": self.block3_5(),
+            "2_5": self.block2_5()
         })
 
         self.decoders = nn.ModuleDict({
@@ -26,6 +28,8 @@ class AutoEncoder(nn.Module):
             "3": self.decoder_block3(),
             "4": self.decoder_block4(),
             "5": self.decoder_block5(),
+            "3_5": self.decoder_block3_5(),
+            "2_5": self.decoder_block2_5()
         })
         self.block = block
         self.activ = activ 
@@ -33,8 +37,15 @@ class AutoEncoder(nn.Module):
     def forward(self,x):
         encoder = self.encoders[self.block]
         x = encoder(x)
+        if self.block == "3_5":
+            x = self.decoders[self.block](x) 
+            self.block="2"
+        if self.block == "2_5":
+            x = self.decoders[self.block](x) 
+            self.block="1"
         for i in range(int(self.block), 0, -1):
             x = self.decoders[str(i)](x) 
+
         if self.activ: 
             output = self.activ(x)
         else: 
@@ -48,11 +59,19 @@ class AutoEncoder(nn.Module):
     def block2(self): 
         model=load_vgg19()
         return model.features[:14]
-
+    
+    def block2_5(self): 
+        model=load_vgg19()
+        return model.features[:26]
+    
     def block3(self):
         model=load_vgg19()
         return model.features[:27]
-
+    
+    def block3_5(self):
+        model=load_vgg19()
+        return model.features[:39]
+    
     def block4(self):
         model=load_vgg19()
         return model.features[:40]
@@ -79,8 +98,22 @@ class AutoEncoder(nn.Module):
                 nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
                 nn.LeakyReLU(inplace=True),
             )
+    def decoder_block2_5(self): 
+        return nn.Sequential(
+            nn.ConvTranspose2d(256, 128, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.LeakyReLU(inplace=True),
+        )
     def decoder_block3(self): 
         return nn.Sequential(
+                nn.ConvTranspose2d(256, 128, kernel_size=3, stride=2, padding=1, output_padding=1),
+                nn.LeakyReLU(inplace=True),
+            )
+    def decoder_block3_5(self): 
+        return nn.Sequential(
+                nn.ConvTranspose2d(512, 256, kernel_size=3, stride=1, padding=1),
+                nn.LeakyReLU(inplace=True),
                 nn.ConvTranspose2d(256, 128, kernel_size=3, stride=2, padding=1, output_padding=1),
                 nn.LeakyReLU(inplace=True),
             )
